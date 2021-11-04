@@ -83,7 +83,16 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	}
 
 	private void sendBucks() {
-		// TODO Auto-generated method stub
+//		// TODO Auto-generated method stub
+//		private void handleListHotels() {
+//			// List all hotels
+//			Hotel[] hotels = hotelService.listHotels();
+//			if (hotels != null){
+//				consoleService.printHotels(hotels);
+//			} else {
+//				consoleService.printErrorMessage();
+//			}
+//		}
 		
 	}
 
