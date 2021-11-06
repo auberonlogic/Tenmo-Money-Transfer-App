@@ -2,15 +2,12 @@ package com.techelevator.tenmo.controller;
 
 import javax.validation.Valid;
 
-import com.techelevator.tenmo.model.Transfer;
-import com.techelevator.tenmo.newStuff.account.Account;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import com.techelevator.tenmo.dao.UserDao;
@@ -20,13 +17,14 @@ import com.techelevator.tenmo.model.User;
 import com.techelevator.tenmo.security.jwt.TokenProvider;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigDecimal;
+import java.security.Principal;
 import java.util.List;
 
 /**
  * Controller to authenticate users.
  */
 @RestController
+@PreAuthorize("isAuthenticated()")
 public class AuthenticationController {
 
     private final TokenProvider tokenProvider;
@@ -39,6 +37,7 @@ public class AuthenticationController {
         this.userDao = userDao;
     }
 
+    @PreAuthorize("permitAll")
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public LoginResponse login(@Valid @RequestBody LoginDTO loginDto) {
 
@@ -54,6 +53,7 @@ public class AuthenticationController {
         return new LoginResponse(jwt, user);
     }
 
+    @PreAuthorize("permitAll")
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     public void register(@Valid @RequestBody RegisterUserDTO newUser) {
@@ -62,13 +62,13 @@ public class AuthenticationController {
         }
     }
 
-//    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("permitAll")
     @RequestMapping(value = "/user", method = RequestMethod.GET)
     public List<User> list() {
         return userDao.findAll();
     }
 
-//    @PreAuthorize("hasRole('USER')")
+
     @RequestMapping(value = "/user/names/{username}", method = RequestMethod.GET)
     public int findIdByUsername(User user, @PathVariable String username){
         return userDao.findIdByUsername(user.getUsername());
@@ -104,22 +104,15 @@ public class AuthenticationController {
 		}
     }
 
-    @RequestMapping(value = "/account/{id}", method = RequestMethod.GET)
-    public Account getAccount(@PathVariable int id) {
-        return userDao.getAccount(id);
+
+    @ResponseStatus(HttpStatus.OK)
+    @RequestMapping(path = "/whoami", method = RequestMethod.GET)
+    public String whoAmI(Principal user) {
+        String userName = user.getName();
+        return userName;
     }
 
-    @RequestMapping(value = "/account/balance/{id}", method = RequestMethod.GET)
-    public BigDecimal getBalance(@PathVariable int id) {
-        return userDao.getBalance(id);
-    }
 
-    @RequestMapping(value = "/transfer/{id}", method = RequestMethod.POST)
-    public Transfer createTransfer(@RequestBody Transfer transfer, @PathVariable int id) {
-        return userDao.createTransfer(transfer);
-    }
-//
-//    @RequestMapping(value = "/account/balance/{id}", method = RequestMethod.PUT)
 
 
 

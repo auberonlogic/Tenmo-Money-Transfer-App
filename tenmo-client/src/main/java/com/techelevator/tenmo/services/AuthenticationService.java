@@ -3,11 +3,13 @@ package com.techelevator.tenmo.services;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import com.techelevator.tenmo.model.User;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
@@ -18,6 +20,8 @@ public class AuthenticationService {
 
     private String baseUrl;
     private RestTemplate restTemplate = new RestTemplate();
+    private User user = new User();
+	private String authToken = null;
 
     public AuthenticationService(String url) {
         this.baseUrl = url;
@@ -80,4 +84,24 @@ public class AuthenticationService {
 		}
 		return message;
 	}
+
+		public User[] listUsers() throws RestClientResponseException, ResourceAccessException {
+		User[] users = null;
+		try {
+
+			users = restTemplate.exchange(baseUrl + "/user", HttpMethod.GET,
+					makeAuthEntity(), User[].class).getBody();
+		} catch (RestClientResponseException | ResourceAccessException e) {
+			System.out.println("Didn't work, but that's okay. Keep going. You're doing great!");
+		}
+		return users;
+	}
+
+	private HttpEntity<Void> makeAuthEntity() {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setBearerAuth(authToken);
+		return new HttpEntity<>(headers);
+	}
+
+
 }
