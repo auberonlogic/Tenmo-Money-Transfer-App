@@ -3,13 +3,10 @@ package com.techelevator.tenmo.services;
 import com.techelevator.tenmo.model.AuthenticatedUser;
 import com.techelevator.tenmo.model.Transfer;
 import com.techelevator.tenmo.model.User;
-import com.techelevator.view.ConsoleService;
 import org.springframework.http.*;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
-
-import java.math.BigDecimal;
 
 public class TransferService {
 
@@ -17,9 +14,10 @@ public class TransferService {
     private final RestTemplate restTemplate = new RestTemplate();
     private AuthenticatedUser currentUser;
 
-    private String token = null;
-    public void setToken(String token) {
-        this.token = token;
+    private String authToken;
+
+    public void setAuthToken(String authToken) {
+        this.authToken = authToken;
     }
 
     public TransferService() {
@@ -62,16 +60,28 @@ public class TransferService {
         return transfer;
     }
 
+    public User[] listUsers() throws RestClientResponseException, ResourceAccessException {
+        User[] users = null;
+        try {
+
+            users = restTemplate.exchange(API_BASE_URL + "/user", HttpMethod.GET,
+                    makeAuthEntity(), User[].class).getBody();
+        } catch (RestClientResponseException | ResourceAccessException e) {
+            System.out.println("Didn't work, but that's okay. Keep going. You're doing great!");
+        }
+        return users;
+    }
+
     private HttpEntity<Transfer> makeTransferEntity(Transfer transfer) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(token);
+        headers.setBearerAuth(authToken);
         return new HttpEntity<>(transfer, headers);
     }
 
     private HttpEntity<Void> makeAuthEntity() {
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
+        headers.setBearerAuth(authToken);
         return new HttpEntity<>(headers);
     }
 }

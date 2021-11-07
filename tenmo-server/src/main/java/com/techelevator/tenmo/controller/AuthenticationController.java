@@ -17,14 +17,12 @@ import com.techelevator.tenmo.model.User;
 import com.techelevator.tenmo.security.jwt.TokenProvider;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.security.Principal;
 import java.util.List;
 
 /**
  * Controller to authenticate users.
  */
 @RestController
-@PreAuthorize("isAuthenticated()")
 public class AuthenticationController {
 
     private final TokenProvider tokenProvider;
@@ -37,7 +35,6 @@ public class AuthenticationController {
         this.userDao = userDao;
     }
 
-    @PreAuthorize("permitAll")
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public LoginResponse login(@Valid @RequestBody LoginDTO loginDto) {
 
@@ -47,31 +44,18 @@ public class AuthenticationController {
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = tokenProvider.createToken(authentication, false);
-        
+
         User user = userDao.findByUsername(loginDto.getUsername());
 
         return new LoginResponse(jwt, user);
     }
 
-    @PreAuthorize("permitAll")
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     public void register(@Valid @RequestBody RegisterUserDTO newUser) {
         if (!userDao.create(newUser.getUsername(), newUser.getPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User registration failed.");
         }
-    }
-
-    @PreAuthorize("permitAll")
-    @RequestMapping(value = "/user", method = RequestMethod.GET)
-    public List<User> list() {
-        return userDao.findAll();
-    }
-
-
-    @RequestMapping(value = "/user/names/{username}", method = RequestMethod.GET)
-    public int findIdByUsername(User user, @PathVariable String username){
-        return userDao.findIdByUsername(user.getUsername());
     }
 
     /**
@@ -95,27 +79,13 @@ public class AuthenticationController {
             this.token = token;
         }
 
-		public User getUser() {
-			return user;
-		}
+        public User getUser() {
+            return user;
+        }
 
-		public void setUser(User user) {
-			this.user = user;
-		}
+        public void setUser(User user) {
+            this.user = user;
+        }
     }
-
-
-    @ResponseStatus(HttpStatus.OK)
-    @RequestMapping(path = "/whoami", method = RequestMethod.GET)
-    public String whoAmI(Principal user) {
-        String userName = user.getName();
-        return userName;
-    }
-
-
-
-
-
 
 }
-
